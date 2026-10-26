@@ -1,4 +1,4 @@
-### Ojsk Community
+### Open Sekai Community
 
  <img src="https://www.jsoftstudio.top/css/Jsoft_logo.png" width = "100" height = "100" alt="Jsoft_logo" align=center />
 
@@ -25,7 +25,7 @@
 > [!tip]
 > 欢迎clone本仓库，基于功能丰富的社区版继续开发
 
-Ojsk Community 是一个用于学习和研究目的的 Project Sekai 音乐游戏玩法复刻项目，目前提供可用的**谱面编辑器**、**第三方歌曲包支持**，以及**从编辑器进入 live 测试游玩**的完整流程。
+Open Sekai Community 是一个用于学习和研究目的的 Project Sekai 音乐游戏玩法复刻项目，目前提供可用的**谱面编辑器**、**第三方歌曲包支持**，以及**从编辑器进入 live 测试游玩**的完整流程。
 
 ## 开发环境
 

@@ -253,8 +253,8 @@ namespace Sekai.CustomMusicScoreManager
 			RectTransform topBar = CreatePanel("TopBar", root, new Color32(31, 37, 45, 255));
 			SetStretchTop(topBar, 0f, 0f, 0f, 108f);
 
-			TextMeshProUGUI title = CreateText("Title", topBar, $"Ojsk Community {Application.version}", 40, FontStyles.Bold, TextAlignmentOptions.Left);
-			SetAnchor(title.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(36f, 0f), new Vector2(560f, 0f));
+			TextMeshProUGUI title = CreateText("Title", topBar, $"Open Sekai Community {Application.version}", 40, FontStyles.Bold, TextAlignmentOptions.Left);
+			SetAnchor(title.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(36f, 0f), new Vector2(900f, 0f));
 
 			RectTransform toolbar = CreateRect("Toolbar", topBar);
 			SetAnchor(toolbar, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(1f, 0.5f), new Vector2(-36f, 0f), new Vector2(980f, 0f));
