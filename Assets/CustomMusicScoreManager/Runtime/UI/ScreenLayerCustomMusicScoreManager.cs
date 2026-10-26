@@ -186,6 +186,8 @@ namespace Sekai.CustomMusicScoreManager
 		private bool _settingFastLateFlickEnabled;
 		private TextMeshProUGUI _settingFullscreenLabel;
 		private bool _settingFullscreenEnabled;
+		private TextMeshProUGUI _settingFrameRateLabel;
+		private int _settingFrameRateLimit;
 		private string _lastExportPath;
 		private TMP_InputField _titleInput;
 		private TMP_InputField _scoreTitleInput;
@@ -452,6 +454,7 @@ namespace Sekai.CustomMusicScoreManager
 			_settingLiveBgmInput = CreateInputField(settingsContent, "音乐音量", "0.0 - 1.0");
 			_settingLiveSeInput = CreateInputField(settingsContent, "音效音量", "0.0 - 1.0");
 			_settingNoteSpeedInput = CreateInputField(settingsContent, "音符流速", "1.0 - 12.0");
+			CreateSettingFrameRateSelector(settingsContent);
 			_settingTimingAdjustInput = CreateInputField(settingsContent, "判定偏移", "-20.0 - 20.0");
 			_settingNoteShowRateInput = CreateInputField(settingsContent, "上隐挡板", "0 - 100");
 			_settingBackgroundBrightnessInput = CreateInputField(settingsContent, "背景亮度", "0 - 100");
@@ -522,6 +525,7 @@ namespace Sekai.CustomMusicScoreManager
 			SetSettingLiveBackgroundMode(liveSettingData.CustomMusicScoreLiveBackgroundMode ?? LiveSettingData.CustomMusicScoreBackgroundMode2DMV);
 			SetSettingFastLateFlick(liveSettingData.IsFastLateFlick);
 			SetSettingFullscreen(localSettings.FullscreenEnabled ?? Screen.fullScreen);
+			SetSettingFrameRate(liveSettingData.FrameRateLimit);
 			_settingsOverlay.gameObject.SetActive(true);
 			_settingsOverlay.SetAsLastSibling();
 		}
@@ -685,6 +689,8 @@ namespace Sekai.CustomMusicScoreManager
 			liveSettingData.CustomMusicScoreAutoResultAnimation = _settingAutoResultAnimation;
 			liveSettingData.CustomMusicScoreLiveBackgroundMode = _settingLiveBackgroundMode;
 			liveSettingData.IsFastLateFlick = _settingFastLateFlickEnabled;
+			liveSettingData.FrameRateLimit = _settingFrameRateLimit;
+			liveSettingData.Use120FPS = _settingFrameRateLimit == 120;
 			if (ShouldShowDesktopFullscreenSetting())
 			{
 				localSettings.FullscreenEnabled = _settingFullscreenEnabled;
@@ -704,6 +710,7 @@ namespace Sekai.CustomMusicScoreManager
 			LiveConfig.SetNoteSeName(liveSettingData.NoteSeIndex);
 			LiveConfig.SetNoteEffectName(liveSettingData.NoteEffect);
 			LiveConfig.ScoreMakerPreviewModeIndex = liveSettingData.ScoreMakerPreviewModeIndex;
+			CP.FramerateUtility.ApplyFrameRateLimit(liveSettingData.FrameRateLimit);
 
 			_settingLiveBgmInput.SetTextWithoutNotify(FormatSettingValue(liveVolume.Bgm));
 			_settingLiveSeInput.SetTextWithoutNotify(FormatSettingValue(liveVolume.Se));
@@ -1328,6 +1335,62 @@ namespace Sekai.CustomMusicScoreManager
 			{
 				_settingFullscreenLabel.text = enabled ? "开启" : "关闭";
 			}
+		}
+
+		private void CreateSettingFrameRateSelector(Transform parent)
+		{
+			RectTransform row = CreateRect("FrameRateSelector", parent);
+			LayoutElement rowLayout = row.gameObject.AddComponent<LayoutElement>();
+			rowLayout.preferredHeight = 58f;
+			rowLayout.minHeight = 58f;
+
+			HorizontalLayoutGroup rowGroup = row.gameObject.AddComponent<HorizontalLayoutGroup>();
+			rowGroup.spacing = 16f;
+			rowGroup.childAlignment = TextAnchor.MiddleLeft;
+			rowGroup.childControlWidth = true;
+			rowGroup.childControlHeight = true;
+			rowGroup.childForceExpandWidth = false;
+			rowGroup.childForceExpandHeight = false;
+
+			TextMeshProUGUI title = CreateText("Label", row, "帧率上限", 24, FontStyles.Bold, TextAlignmentOptions.Left);
+			LayoutElement titleLayout = title.gameObject.AddComponent<LayoutElement>();
+			titleLayout.preferredWidth = 180f;
+			titleLayout.minWidth = 180f;
+			titleLayout.preferredHeight = 58f;
+			titleLayout.minHeight = 58f;
+
+			Button button = CreateButton("Button", row, string.Empty, CycleSettingFrameRate, 220f, 54f);
+			_settingFrameRateLabel = button.GetComponentInChildren<TextMeshProUGUI>();
+			SetSettingFrameRate(CP.FramerateUtility.FollowDisplay);
+		}
+
+		private void CycleSettingFrameRate()
+		{
+			int[] limits = CP.FramerateUtility.SupportedLimits;
+			int currentIndex = Array.IndexOf(limits, _settingFrameRateLimit);
+			if (currentIndex < 0)
+			{
+				currentIndex = 0;
+			}
+			SetSettingFrameRate(limits[(currentIndex + 1) % limits.Length]);
+		}
+
+		private void SetSettingFrameRate(int limit)
+		{
+			_settingFrameRateLimit = CP.FramerateUtility.SanitizeLimit(limit);
+			if (_settingFrameRateLabel == null)
+			{
+				return;
+			}
+			if (_settingFrameRateLimit > 0)
+			{
+				_settingFrameRateLabel.text = CP.FramerateUtility.GetLimitLabel(_settingFrameRateLimit);
+				return;
+			}
+			float displayRefreshRate = CP.FramerateUtility.GetDisplayRefreshRate();
+			_settingFrameRateLabel.text = displayRefreshRate > 0f
+				? "跟随屏幕 (" + displayRefreshRate.ToString("0.##", CultureInfo.InvariantCulture) + "Hz)"
+				: "跟随屏幕";
 		}
 
 		private void CreateSettingBackupSelector(Transform parent)
