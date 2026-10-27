@@ -111,6 +111,13 @@ namespace Sekai
 		[Key("Use120FPS")]
 		public bool Use120FPS { get; set; }
 
+		/// <summary>
+		/// Frame rate cap for live play, in Hz. 0 follows the display refresh rate.
+		/// Supported values come from <see cref="CP.FramerateUtility.SupportedLimits"/>.
+		/// </summary>
+		[Key("FrameRateLimit")]
+		public int FrameRateLimit { get; set; }
+
 		[Key("UsedVSync")]
 		public bool? UseVSync { get; set; }
 
@@ -246,6 +253,7 @@ namespace Sekai
 			UseAllPerfectEffect = true;
 			QualityType = MVQualityType.Default;
 			Use120FPS = false;
+			FrameRateLimit = 0;
 			NoteEffect = 0;
 			_noteShowRate = 0f;
 			FeverEffectTypeIndex = 0;
@@ -282,6 +290,11 @@ namespace Sekai
 			}
 
 			cachedStorage = data ?? new LiveSettingData();
+			if (cachedStorage.FrameRateLimit <= 0 && cachedStorage.Use120FPS)
+			{
+				// Older saves only had the unused Use120FPS flag; honour it as a 120 Hz cap.
+				cachedStorage.FrameRateLimit = 120;
+			}
 			return cachedStorage;
 		}
 
