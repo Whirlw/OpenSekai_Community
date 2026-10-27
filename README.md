@@ -26,23 +26,27 @@ OpenSekai 是一个用于学习和研究目的的 Project Sekai 音乐游戏玩�
 
 ## 关于本仓库
 
-本仓库修改自 [kamcdev/OpenSekai_Community](https://github.com/kamcdev/OpenSekai_Community)，并在其基础上添加了**游玩帧率上限**功能。
+本仓库修改自 [kamcdev/OpenSekai_Community](https://github.com/kamcdev/OpenSekai_Community)，并在其基础上**开放了高帧率**支持。
 
 上游仓库已归档停止维护，此处的改动仅供学习和研究使用。
 
-### 新增：帧率上限
+### 新增：高帧率（120 / 144 / 165 / 185 / 240 Hz）
 
-音游对延迟稳定性要求很高，因此帧率不采用「无上限」策略，而是由玩家在设置里手动选择一个上限档位：
+原版设置里虽然有一个 `Use120FPS` 开关，但没有任何代码读取它；运行时只是把 `Application.targetFrameRate` 设成屏幕当前刷新率，而 `QualitySettings` 各档位的垂直同步是开着的（当前使用的 Ultra 档 `vSyncCount: 1`），这个值根本不会生效。同时也没有主动请求高刷新率的显示模式，跑多少帧完全取决于系统分给应用的显示模式，玩家没有任何选择余地。
 
-- 设置面板新增「帧率」一项，可选 **跟随屏幕 / 120 / 144 / 165 / 185 / 240 Hz**。
-- 选中档位后关闭垂直同步（`QualitySettings.vSyncCount = 0`），由 `Application.targetFrameRate` 限帧，避免帧率在负载下大幅波动导致判定手感漂移。
-- Android 平台会通过 `WindowManager.LayoutParams.preferredDisplayModeId` 请求面板对应的显示模式（按物理分辨率筛选，取不超过所选档位的最高刷新率）；设备不支持或拿不到显示模式时，自动回退为只设置 `Application.targetFrameRate`。
-- 「跟随屏幕」档位保持原有行为，不主动请求高刷新率模式。
+现在设置面板新增「帧率」一项，可选 **跟随屏幕 / 120 / 144 / 165 / 185 / 240 Hz**：
+
+- 选定档位后关闭垂直同步（`QualitySettings.vSyncCount = 0`），改由 `Application.targetFrameRate` 驱动，帧率才真正解锁到所选档位。
+- Android 平台会通过 `WindowManager.LayoutParams.preferredDisplayModeId` 请求与所选档位匹配的显示模式：先按物理分辨率筛出同一块屏的模式，再取不超过所选档位的最高刷新率，让面板真正切到 120 / 144 / 165 / 185 / 240。
+- 设备拿不到可用的显示模式时会自动回退，只设置 `Application.targetFrameRate`，不会黑屏或报错退出。
+- 「跟随屏幕」保持原版行为（跟随屏幕当前刷新率），不主动请求高刷模式。
+
+音游对延迟稳定性要求很高，所以帧率不是「能多高就多高」，而是由玩家挑一个固定档位：帧率频繁抖动会让判定手感漂移，固定档位反而更稳。
 
 ### 改动位置
 
-- `Assets/Scripts/Assembly-CSharp/CP/FramerateUtility.cs`：帧率档位定义与 `ApplyFrameRateLimit`，包含 Android 显示模式请求逻辑。
-- `Assets/Scripts/Assembly-CSharp/Sekai/LiveSettingData.cs`：新增 `FrameRateLimit` 字段，并将旧的 `Use120FPS` 设置迁移为 120 档。
+- `Assets/Scripts/Assembly-CSharp/CP/FramerateUtility.cs`：帧率档位的定义与应用（`ApplyFrameRateLimit`），包含 Android 显示模式请求逻辑。
+- `Assets/Scripts/Assembly-CSharp/Sekai/LiveSettingData.cs`：新增 `FrameRateLimit` 字段保存所选档位，旧的 `Use120FPS` 设置会迁移到 120 档。
 - `Assets/Scripts/Assembly-CSharp/Sekai/Core/Live/BaseLiveController.cs`：进入 live 时按当前设置应用帧率。
 - `Assets/CustomMusicScoreManager/Runtime/UI/ScreenLayerCustomMusicScoreManager.cs`：设置面板中的帧率选择项，以及顶栏标题。
 
